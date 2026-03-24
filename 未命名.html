@@ -279,6 +279,9 @@
                         <button id="next-page" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                             下一页
                         </button>
+                        <button id="btn-cancel-legend" class="px-4 py-2 bg-red-500/80 hover:bg-red-500 rounded-lg transition-colors text-white">
+                            取消
+                        </button>
                     </div>
                     <div class="bg-white/5 rounded-lg p-4">
                         <h3 class="text-xl font-bold text-white mb-2">传说+特性</h3>
@@ -767,6 +770,10 @@
             document.getElementById('legend-plus-modal').classList.remove('hidden');
         });
         document.getElementById('btn-close-legend-modal').addEventListener('click', function() {
+            document.getElementById('legend-plus-modal').classList.add('hidden');
+        });
+        // 取消按钮关闭模态框
+        document.getElementById('btn-cancel-legend').addEventListener('click', function() {
             document.getElementById('legend-plus-modal').classList.add('hidden');
         });
         // 点击模态框外部关闭
