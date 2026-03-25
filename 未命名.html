@@ -349,8 +349,11 @@
                         <button id="next-page" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                             下一页
                         </button>
-                        <button id="btn-cancel-legend" class="px-4 py-2 bg-red-500/80 hover:bg-red-500 rounded-lg transition-colors text-white">
+                        <button id="btn-confirm-legend" class="px-4 py-2 bg-yellow-500/80 hover:bg-yellow-500 rounded-lg transition-colors text-white font-bold">
                             确认
+                        </button>
+                        <button id="btn-cancel-legend" class="px-4 py-2 bg-red-500/80 hover:bg-red-500 rounded-lg transition-colors text-white">
+                            取消
                         </button>
                     </div>
                     <div class="bg-white/5 rounded-lg p-4">
@@ -840,6 +843,10 @@
             document.getElementById('legend-plus-modal').classList.remove('hidden');
         });
         document.getElementById('btn-close-legend-modal').addEventListener('click', function() {
+            document.getElementById('legend-plus-modal').classList.add('hidden');
+        });
+        // 确认按钮关闭模态框
+        document.getElementById('btn-confirm-legend').addEventListener('click', function() {
             document.getElementById('legend-plus-modal').classList.add('hidden');
         });
         // 取消按钮关闭模态框
