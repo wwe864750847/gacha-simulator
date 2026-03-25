@@ -1,0 +1,875 @@
+<html lang="zh-CN"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>龙魂旅人模拟抽卡器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'legend-plus': '#ff7d00',
+                        'epic': '#a855f7',
+                        'elite': '#3b82f6',
+                        'normal': '#22c55e',
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .card-legend-plus {
+                border-color: theme('colors.legend-plus');
+                box-shadow: 0 0 15px theme('colors.legend-plus/40');
+            }
+            .card-epic {
+                border-color: theme('colors.epic');
+                box-shadow: 0 0 10px theme('colors.epic/30');
+            }
+            .card-elite {
+                border-color: theme('colors.elite');
+            }
+            .card-normal {
+                border-color: theme('colors.normal');
+            }
+            .text-legend-plus {
+                color: theme('colors.legend-plus');
+            }
+            .text-epic {
+                color: theme('colors.epic');
+            }
+            .text-elite {
+                color: theme('colors.elite');
+            }
+            .text-normal {
+                color: theme('colors.normal');
+            }
+        }
+        
+        /* 响应式样式 */
+        @media (max-width: 640px) {
+            .container {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
+            }
+            h1 {
+                font-size: 1.25rem !important;
+            }
+            .gacha-container {
+                aspect-ratio: 4/3 !important;
+                min-height: 280px;
+            }
+            .gacha-card {
+                width: 2rem !important;
+                height: 5rem !important;
+            }
+            .gacha-card img {
+                width: 1.5rem !important;
+                height: 4rem !important;
+            }
+            /* 右上角资源区域 */
+            .gacha-container .absolute.top-4.right-4 {
+                position: relative;
+                top: auto;
+                right: auto;
+                flex-direction: column;
+                gap: 0.5rem;
+                padding: 0.5rem;
+            }
+            .gacha-container .absolute.top-4.right-4 > div {
+                padding: 0.25rem 0.5rem;
+            }
+            .gacha-container .absolute.top-4.right-4 img {
+                height: 2rem;
+            }
+            .gacha-container .absolute.top-4.right-4 input {
+                font-size: 1rem;
+                width: 4rem;
+            }
+            .gacha-container .absolute.top-4.right-4 button {
+                width: 1.5rem;
+                height: 1.5rem;
+                font-size: 0.875rem;
+            }
+            /* 抽奖按钮 */
+            .gacha-container .absolute.bottom-4.right-4 {
+                bottom: 0.5rem;
+                right: 0.5rem;
+            }
+            .gacha-container .absolute.bottom-4.right-4 img {
+                height: 2.5rem;
+            }
+            /* 操作按钮 */
+            .flex.justify-end.gap-4 {
+                justify-content: center;
+                gap: 0.5rem;
+            }
+            .flex.justify-end.gap-4 button img {
+                height: 2.5rem;
+            }
+            .flex.justify-end.gap-4 button.px-8 {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+            /* 设置卡片 */
+            .grid.grid-cols-1.md\:grid-cols-2 {
+                gap: 0.5rem;
+            }
+            .grid.grid-cols-1.md\:grid-cols-2 > div {
+                padding: 0.75rem;
+            }
+            /* 页面介绍 */
+            .flex.items-stretch {
+                flex-direction: column;
+            }
+            .flex.items-stretch .w-px {
+                width: 100%;
+                height: 1px;
+                margin: 0.5rem 0;
+            }
+            .flex.items-stretch > div {
+                text-align: center !important;
+                padding: 0 !important;
+            }
+            /* 模态框适配 */
+            .fixed.inset-0 .bg-white\/10 {
+                margin: 0.5rem;
+                padding: 1rem;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            .fixed.inset-0 .text-2xl {
+                font-size: 1.25rem;
+            }
+            .fixed.inset-0 .grid.grid-cols-1.sm\:grid-cols-2.md\:grid-cols-3 {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+            .fixed.inset-0 .flex.items-center.gap-4 {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .fixed.inset-0 .flex.items-center.gap-4 > div,
+            .fixed.inset-0 .flex.items-center.gap-4 > button {
+                width: 100%;
+            }
+            .fixed.inset-0 img.w-20 {
+                width: 3rem;
+                height: 3rem;
+            }
+            .fixed.inset-0 .text-lg {
+                font-size: 1rem;
+            }
+            /* 分页按钮 */
+            #pagination-controls {
+                flex-wrap: wrap;
+            }
+            #pagination-controls button {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+            /* 概率公式表 */
+            .bg-white\/5.rounded-lg.p-4 {
+                padding: 0.75rem;
+            }
+            .bg-white\/5.rounded-lg.p-4 h3 {
+                font-size: 1rem;
+            }
+            .bg-white\/5.rounded-lg.p-4 p {
+                font-size: 0.875rem;
+            }
+        }
+        
+        @media (min-width: 641px) and (max-width: 1024px) {
+            .gacha-card {
+                width: 3rem !important;
+                height: 9rem !important;
+            }
+            .gacha-card img {
+                width: 2.5rem !important;
+                height: 7rem !important;
+            }
+            .gacha-container .absolute.top-4.right-4 img {
+                height: 2.5rem;
+            }
+            .gacha-container .absolute.bottom-4.right-4 img {
+                height: 3rem;
+            }
+            /* 模态框适配 */
+            .fixed.inset-0 .grid.grid-cols-1.sm\:grid-cols-2.md\:grid-cols-3 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (min-width: 1025px) {
+            .gacha-container {
+                max-width: 1600px;
+            }
+        }
+        
+        /* 全局自适应字体 */
+        html {
+            font-size: 16px;
+        }
+        
+        @media (max-width: 480px) {
+            html {
+                font-size: 14px;
+            }
+        }
+        
+        @media (min-width: 1920px) {
+            html {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- 头部信息 -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-white mb-2">龙魂旅人模拟抽卡器</h1>
+            <p class="text-gray-300">更好的计算和规划游戏资源</p>
+        </div>
+
+        <!-- 设置卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                <div class="text-gray-300 mb-2 text-center">保底数量设置</div>
+                <div class="flex items-center justify-center gap-2">
+                    <button onclick="changeMaxPity(-1)" class="w-8 h-8 bg-gray-500/80 hover:bg-gray-500 rounded-lg text-white font-bold text-xl transition-colors cursor-pointer">-</button>
+                    <input type="number" id="max-pity-input" value="30" class="w-20 bg-transparent text-white text-2xl font-bold text-center border-b-2 border-white/50 focus:outline-none focus:border-yellow-400">
+                    <button onclick="changeMaxPity(1)" class="w-8 h-8 bg-gray-500/80 hover:bg-gray-500 rounded-lg text-white font-bold text-xl transition-colors cursor-pointer">+</button>
+                </div>
+            </div>
+            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                <div class="text-gray-300 mb-2 text-center">传说+概率 (%)</div>
+                <div class="flex items-center justify-center gap-2">
+                    <button onclick="changeProb(-0.1)" class="w-8 h-8 bg-gray-500/80 hover:bg-gray-500 rounded-lg text-white font-bold text-xl transition-colors cursor-pointer">-</button>
+                    <input type="number" id="prob-input" value="2.2" step="0.1" class="w-20 bg-transparent text-white text-2xl font-bold text-center border-b-2 border-white/50 focus:outline-none focus:border-yellow-400">
+                    <button onclick="changeProb(0.1)" class="w-8 h-8 bg-gray-500/80 hover:bg-gray-500 rounded-lg text-white font-bold text-xl transition-colors cursor-pointer">+</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 状态卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-center">
+                <div class="text-gray-300 mb-2">当前垫抽</div>
+                <div class="text-3xl font-bold text-white" id="pity-count">2</div>
+                <div class="text-sm text-gray-400 mt-1">距离保底剩余: <span class="text-red-400 font-bold" id="pity-left">28</span> 抽</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-center">
+                <div class="text-gray-300 mb-2">已抽到传说+</div>
+                <div class="text-3xl font-bold text-legend-plus" id="gold-count">0</div>
+                <i class="fa fa-star text-yellow-400 mt-2"></i>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="flex justify-end gap-4 mb-8 flex-wrap">
+            <button id="btn-legend-plus" class="transition-all transform hover:scale-105">
+                <img src="1/限定召唤.png" alt="限定召唤" class="h-14">
+            </button>
+            <button id="btn-mythic" class="transition-all transform hover:scale-105">
+                <img src="1/神话召唤.png" alt="神话召唤" class="h-14">
+            </button>
+            <button id="btn-probability" class="px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg">
+                <i class="fa fa-bar-chart mr-2"></i>概率公式表
+            </button>
+            <button id="btn-reset" class="px-8 py-4 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg">
+                <i class="fa fa-refresh mr-2"></i>重置模拟
+            </button>
+        </div>
+
+        <!-- 概率公式表模态框 -->
+        <div id="probability-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] hidden flex items-center justify-center">
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-8 max-w-2xl w-full mx-4">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-white">概率公式表</h2>
+                    <button id="btn-close-modal" class="text-white text-2xl hover:text-gray-300 transition-colors">&times;</button>
+                </div>
+                <div class="space-y-4 text-gray-300">
+                    <div class="bg-white/5 rounded-lg p-4">
+                        <h3 class="text-xl font-bold text-white mb-2">抽卡概率计算</h3>
+                        <p class="mb-2">1. 基础概率：</p>
+                        <p>   - 传说+（共27位）：2.2%</p>
+                        <p>   - 史诗：12%</p>
+                        <p>   - 精英：50%</p>
+                        <p>   - 普通：35.8%</p>
+                    </div>
+                    <div class="bg-white/5 rounded-lg p-4">
+                        <h3 class="text-xl font-bold text-white mb-2">保底机制</h3>
+                        <p>2. 保底规则：</p>
+                        <p>   - 每45抽必出传说+（可在设置中调整）</p>
+                        <p>   - 若在45抽内抽到传说+，保底计数重置</p>
+                    </div>
+                    <div class="bg-white/5 rounded-lg p-4">
+                        <h3 class="text-xl font-bold text-white mb-2">权重计算</h3>
+                        <p>3. 权重分配：</p>
+                        <p>   - 传说+：2.2</p>
+                        <p>   - 史诗：0.857 × 14 = 12</p>
+                        <p>   - 精英：5.556 × 9 = 50</p>
+                        <p>   - 普通：7.16 × 5 = 35.8</p>
+                        <p>   - 总权重：100</p>
+                    </div>
+                    <div class="bg-white/5 rounded-lg p-4">
+                        <h3 class="text-xl font-bold text-white mb-2">消耗规则</h3>
+                        <p>4. 消耗计算：</p>
+                        <p>   - 单抽：300钻石 或 1张召唤券</p>
+                        <p>   - 十连：3000钻石 或 10张召唤券</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 传说+英雄模态框 -->
+        <div id="legend-plus-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] hidden flex items-center justify-center">
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-8 max-w-4xl w-full mx-4">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-yellow-400">传说+英雄</h2>
+                    <button id="btn-close-legend-modal" class="text-white text-2xl hover:text-gray-300 transition-colors">&times;</button>
+                </div>
+                <div class="space-y-6 text-gray-300">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" id="legend-plus-heroes">
+                        <!-- 传说+英雄列表将通过JS动态生成 -->
+                    </div>
+                    <div class="flex justify-center items-center gap-4" id="pagination-controls">
+                        <button id="prev-page" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            上一页
+                        </button>
+                        <div id="page-info" class="text-center">
+                            第 1 页，共 1 页
+                        </div>
+                        <button id="next-page" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            下一页
+                        </button>
+                        <button id="btn-confirm-legend" class="px-4 py-2 bg-yellow-500/80 hover:bg-yellow-500 rounded-lg transition-colors text-white font-bold">
+                            确认
+                        </button>
+                        <button id="btn-cancel-legend" class="px-4 py-2 bg-red-500/80 hover:bg-red-500 rounded-lg transition-colors text-white">
+                            取消
+                        </button>
+                    </div>
+                    <div class="bg-white/5 rounded-lg p-4">
+                        <h3 class="text-xl font-bold text-white mb-2">传说+特性</h3>
+                        <p>• 最高稀有度，拥有强大的技能和属性</p>
+                        <p>• 保底机制：每45抽必出</p>
+                        <p>• 抽到后保底计数重置</p>
+                        <p>• 全服唯一限定英雄</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 抽卡结果：1600x900比例 -->
+        <div class="gacha-container rounded-xl mb-8 overflow-hidden bg-cover bg-center bg-no-repeat relative mx-auto" style="background-image: url('1/抽奖背景.png'); width: 100%; max-width: 1600px; aspect-ratio: 16/9;">
+
+            <!-- 右上角资源 -->
+            <div class="absolute top-4 right-4 flex gap-4 z-50">
+                <div class="flex items-center gap-2 bg-black/40 backdrop-blur-sm rounded-xl px-4 py-2">
+                    <img src="1/钻石.png" alt="钻石" class="h-14">
+                    <button onclick="changeDiamonds(-100)" class="w-8 h-8 bg-cyan-500/80 hover:bg-cyan-500 rounded-lg text-white font-bold text-xl transition-colors cursor-pointer">-</button>
+                    <input type="number" id="diamond-input" value="10000" class="w-28 bg-transparent text-white text-2xl font-bold text-center border-0 focus:outline-none">
+                    <button onclick="changeDiamonds(100)" class="w-8 h-8 bg-cyan-500/80 hover:bg-cyan-500 rounded-lg text-white font-bold text-xl transition-colors cursor-pointer">+</button>
+                </div>
+                <div class="flex items-center gap-2 bg-black/40 backdrop-blur-sm rounded-xl px-4 py-2">
+                    <img src="1/限定召唤券.png" alt="限定召唤券" class="h-14">
+                    <button onclick="changeTickets(-1)" class="w-8 h-8 bg-yellow-500/80 hover:bg-yellow-500 rounded-lg text-white font-bold text-xl transition-colors cursor-pointer">-</button>
+                    <input type="number" id="ticket-input" value="36" class="w-20 bg-transparent text-white text-2xl font-bold text-center border-0 focus:outline-none">
+                    <button onclick="changeTickets(1)" class="w-8 h-8 bg-yellow-500/80 hover:bg-yellow-500 rounded-lg text-white font-bold text-xl transition-colors cursor-pointer">+</button>
+                </div>
+            </div>
+
+            <div id="result-container" class="absolute inset-0 flex flex-row justify-center items-center gap-0 pt-12">
+                <div class="text-gray-400 text-center">
+                    <div>点击按钮开始模拟抽卡</div>
+                    <div class="text-sm mt-2" id="mode-info">当前模式：普池（可抽所有传说+）</div>
+                    <div class="text-sm mt-2" id="mode-info">上方限定召唤选择后就时限定模式单独抽一个英雄</div>
+                </div>
+            </div>
+            <!-- 抽奖按钮放在右下角 -->
+            <div class="absolute bottom-4 right-4 flex gap-2">
+                <button id="btn-single" class="transition-all transform hover:scale-105">
+                    <img src="1/1抽.png" alt="1抽" class="h-14">
+                </button>
+                <button id="btn-ten" class="transition-all transform hover:scale-105">
+                    <img src="1/10连抽.png" alt="10连抽" class="h-14">
+                </button>
+            </div>
+        </div>
+
+        <!-- 页面介绍 -->
+        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+            <h2 class="text-xl font-bold text-white mb-4 text-center">页面介绍</h2>
+            <div class="flex items-stretch">
+                <div class="flex-1 text-gray-300 text-sm leading-relaxed text-right pr-4">
+                    <p>作者：麦凯蒂斯</p>
+                    <p>本软件免费使用</p>
+                    <p>有任何的建议和想法可以联系本人</p>
+                    <p>B站和Tap Tap都有账号，直接搜名字即可</p>
+                </div>
+                <div class="w-px bg-white/20"></div>
+                <div class="flex-1 text-gray-300 text-sm leading-relaxed text-left pl-4">
+                     <p>     /                           </p>
+                    <p>模拟器贴合90%复刻游戏的抽卡系统</p>
+                    <p>所有的概率和抽奖方式贴合游戏里的内容</p>
+                    <p>大大提高了游戏玩家的规划资源与想法</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 角色数据
+        const characters = [
+            // 传说+
+            { name: '智慧巨人·密米尔', quality: 'legend-plus', weight: 2.2, icon: '1/智慧巨人·密米尔.png' },
+            { name: '亚瑟', quality: 'legend-plus', weight: 2.2, icon: '1/亚瑟.png' },
+            { name: '六臂蛇魔（玛丽莉丝）', quality: 'legend-plus', weight: 2.2, icon: '1/六臂蛇魔（玛丽莉丝）.png' },
+            { name: '冥界判官（阿努比斯）', quality: 'legend-plus', weight: 2.2, icon: '1/冥界判官（阿努比斯）.png' },
+            { name: '凯撒', quality: 'legend-plus', weight: 2.2, icon: '1/凯撒.png' },
+            { name: '半神巫妖', quality: 'legend-plus', weight: 2.2, icon: '1/半神巫妖.png' },
+            { name: '双生鸦灵（福金&雾尼）', quality: 'legend-plus', weight: 2.2, icon: '1/双生鸦灵（福金&雾尼）.png' },
+            { name: '噬血剑魔（提尔锋）', quality: 'legend-plus', weight: 2.2, icon: '1/噬血剑魔（提尔锋）.png' },
+            { name: '四圣（青龙）', quality: 'legend-plus', weight: 2.2, icon: '1/四圣（青龙）.png' },
+            { name: '圣剑主教', quality: 'legend-plus', weight: 2.2, icon: '1/圣剑主教.png' },
+            { name: '堕落女武神（赫尔薇尔）', quality: 'legend-plus', weight: 2.2, icon: '1/堕落女武神（赫尔薇尔）.png' },
+            { name: '大天使', quality: 'legend-plus', weight: 2.2, icon: '1/大天使.png' },
+            { name: '尘世巨蟒（耶梦加得）', quality: 'legend-plus', weight: 2.2, icon: '1/尘世巨蟒（耶梦加得）.png' },
+            { name: '幽冥公主（扎格柔丝）', quality: 'legend-plus', weight: 2.2, icon: '1/幽冥公主（扎格柔丝）.png' },
+            { name: '恶魔支配者（浮士德）', quality: 'legend-plus', weight: 2.2, icon: '1/恶魔支配者（浮士德）.png' },
+            { name: '无双剑豪（凛）', quality: 'legend-plus', weight: 2.2, icon: '1/无双剑豪（凛）.png' },
+            { name: '死亡骑士', quality: 'legend-plus', weight: 2.2, icon: '1/死亡骑士.png' },
+            { name: '灯神', quality: 'legend-plus', weight: 2.2, icon: '1/灯神.png' },
+            { name: '炎魔（伊芙利特）', quality: 'legend-plus', weight: 2.2, icon: '1/炎魔（伊芙利特）.png' },
+            { name: '熊猫', quality: 'legend-plus', weight: 2.2, icon: '1/熊猫.png' },
+            { name: '腐败花蕾（宁萝丝）', quality: 'legend-plus', weight: 2.2, icon: '1/腐败花蕾（宁萝丝）.png' },
+            { name: '莫甘娜', quality: 'legend-plus', weight: 2.2, icon: '1/莫甘娜.png' },
+            { name: '蛇女', quality: 'legend-plus', weight: 2.2, icon: '1/蛇女.png' },
+            { name: '铁血统帅（庞培）', quality: 'legend-plus', weight: 2.2, icon: '1/铁血统帅（庞培）.png' },
+            { name: '锻火龙姬（杜瓦林）', quality: 'legend-plus', weight: 2.2, icon: '1/锻火龙姬（杜瓦林）.png' },
+            { name: '霜星猎手（俄里翁）', quality: 'legend-plus', weight: 2.2, icon: '1/霜星猎手（俄里翁）.png' },
+            { name: '青铜神姬（塔萝丝）', quality: 'legend-plus', weight: 2.2, icon: '1/青铜神姬（塔萝丝）.png' },
+            // 史诗
+            { name: '荒野暴徒', quality: 'epic', weight: 0.857, icon: '1/荒野暴徒.png' },
+            { name: '林地领主', quality: 'epic', weight: 0.857, icon: '1/林地领主.png' },
+            { name: '游弋歌姬', quality: 'epic', weight: 0.857, icon: '1/游弋歌姬.png' },
+            { name: '春日花灵', quality: 'epic', weight: 0.857, icon: '1/春日花灵.png' },
+            { name: '影武者', quality: 'epic', weight: 0.857, icon: '1/影武者.png' },
+            { name: '月夜怒兽', quality: 'epic', weight: 0.857, icon: '1/月夜怒兽.png' },
+            { name: '求死之徒', quality: 'epic', weight: 0.857, icon: '1/求死之徒.png' },
+            { name: '契约恶魔', quality: 'epic', weight: 0.857, icon: '1/契约恶魔.png' },
+            { name: '戎装公主', quality: 'epic', weight: 0.857, icon: '1/戎装公主.png' },
+            { name: '蛮地猎手', quality: 'epic', weight: 0.857, icon: '1/蛮地猎手.png' },
+            { name: '独眼巨人', quality: 'epic', weight: 0.857, icon: '1/独眼巨人.png' },
+            { name: '捣乱使魔', quality: 'epic', weight: 0.857, icon: '1/捣乱使魔.png' },
+            { name: '彷徨幽魂', quality: 'epic', weight: 0.857, icon: '1/彷徨幽魂.png' },
+            // 精英
+            { name: '矮人战士', quality: 'elite', weight: 5.556, icon: '1/矮人战士.png' },
+            { name: '木乃伊', quality: 'elite', weight: 5.556, icon: '1/木乃伊.png' },
+            { name: '引路妖精', quality: 'elite', weight: 5.556, icon: '1/引路妖精.png' },
+            { name: '哥布林擂鼓手', quality: 'elite', weight: 5.556, icon: '1/哥布林擂鼓手.png' },
+            { name: '剑舞者', quality: 'elite', weight: 5.556, icon: '1/剑舞者.png' },
+            { name: '哥布林攻城槌', quality: 'elite', weight: 5.556, icon: '1/哥布林攻城槌.png' },
+            { name: '木精灵弓手', quality: 'elite', weight: 5.556, icon: '1/木精灵弓手.png' },
+            { name: '矮人加农炮', quality: 'elite', weight: 5.556, icon: '1/矮人加农炮.png' },
+            { name: '矮人祭司', quality: 'elite', weight: 5.556, icon: '1/矮人祭司.png' },
+            // 普通
+            { name: '岩石史莱姆', quality: 'normal', weight: 7.16, icon: '1/岩石史莱姆.png' },
+            { name: '微风史莱姆', quality: 'normal', weight: 7.16, icon: '1/微风史莱姆.png' },
+            { name: '暗影史莱姆', quality: 'normal', weight: 7.16, icon: '1/暗影史莱姆.png' },
+            { name: '火焰史莱姆', quality: 'normal', weight: 7.16, icon: '1/火焰史莱姆.png' },
+            { name: '闪电史莱姆', quality: 'normal', weight: 7.16, icon: '1/闪电史莱姆.png' },
+        ];
+
+        // 构建权重池
+        const totalWeight = characters.reduce((sum, c) => sum + c.weight, 0);
+        const weightPool = [];
+        let current = 0;
+        for (const c of characters) {
+            current += c.weight;
+            weightPool.push({ char: c, max: current });
+        }
+
+        // 状态
+        let state = {
+            diamonds: 10000,
+            tickets: 36,
+            pity: 2,
+            goldCount: 0,
+            maxPity: 45,
+            probability: 2.2
+        };
+
+        // 改变保底数量
+        function changeMaxPity(amount) {
+            state.maxPity = Math.max(1, state.maxPity + amount);
+            updateUI();
+        }
+
+        // 改变概率
+        function changeProb(amount) {
+            state.probability = Math.max(0.1, Math.min(100, state.probability + amount));
+            updateUI();
+        }
+
+        // 随机抽一个角色
+        function drawSingleChar() {
+            // 先判断保底
+            state.pity += 1;
+            let isGold = false;
+            if (state.pity >= state.maxPity) {
+                // 保底出金
+                isGold = true;
+                state.pity = 0;
+            } else {
+                // 随机判断
+                if (Math.random() < state.probability / 100) {
+                    isGold = true;
+                    state.pity = 0;
+                }
+            }
+
+            let char;
+            if (isGold) {
+                // 出金
+                if (selectedLegendPlusHero) {
+                    // 有指定英雄，只出指定的
+                    char = selectedLegendPlusHero;
+                } else {
+                    // 没有指定英雄，从所有传说+英雄中随机选择
+                    const legendPlusChars = characters.filter(c => c.quality === 'legend-plus');
+                    char = legendPlusChars[Math.floor(Math.random() * legendPlusChars.length)];
+                }
+                state.goldCount += 1;
+            } else {
+                // 随机抽其他角色
+                const nonGoldChars = characters.filter(c => c.quality !== 'legend-plus');
+                const nonGoldWeight = nonGoldChars.reduce((sum, c) => sum + c.weight, 0);
+                const rand = Math.random() * nonGoldWeight;
+                let current = 0;
+                for (const c of nonGoldChars) {
+                    current += c.weight;
+                    if (rand < current) {
+                        char = c;
+                        break;
+                    }
+                }
+            }
+
+            return char;
+        }
+
+        // 更新UI
+        function updateUI() {
+            const diamondInput = document.getElementById('diamond-input');
+            if (diamondInput) diamondInput.value = state.diamonds;
+            const ticketInput = document.getElementById('ticket-input');
+            if (ticketInput) ticketInput.value = state.tickets;
+            const maxPityInput = document.getElementById('max-pity-input');
+            if (maxPityInput) maxPityInput.value = state.maxPity;
+            const probInput = document.getElementById('prob-input');
+            if (probInput) probInput.value = state.probability;
+            document.getElementById('pity-count').textContent = state.pity;
+            document.getElementById('pity-left').textContent = state.maxPity - state.pity;
+            document.getElementById('gold-count').textContent = state.goldCount;
+            
+            // 更新模式信息
+            const modeInfo = document.getElementById('mode-info');
+            if (modeInfo) {
+                if (selectedLegendPlusHero) {
+                    modeInfo.textContent = `当前模式：限定（仅抽 ${selectedLegendPlusHero.name}）`;
+                } else {
+                    modeInfo.textContent = '当前模式：普池（可抽所有传说+）';
+                }
+            }
+        }
+
+        // 改变钻石数量
+        function changeDiamonds(amount) {
+            state.diamonds = Math.max(0, state.diamonds + amount);
+            updateUI();
+        }
+
+        // 改变券数量
+        function changeTickets(amount) {
+            state.tickets = Math.max(0, state.tickets + amount);
+            updateUI();
+        }
+
+        // 初始化输入框事件
+        function initInputs() {
+            const diamondInput = document.getElementById('diamond-input');
+            if (diamondInput) {
+                diamondInput.addEventListener('change', (e) => {
+                    state.diamonds = Math.max(0, parseInt(e.target.value) || 0);
+                });
+            }
+            const ticketInput = document.getElementById('ticket-input');
+            if (ticketInput) {
+                ticketInput.addEventListener('change', (e) => {
+                    state.tickets = Math.max(0, parseInt(e.target.value) || 0);
+                });
+            }
+            const maxPityInput = document.getElementById('max-pity-input');
+            if (maxPityInput) {
+                maxPityInput.addEventListener('change', (e) => {
+                    state.maxPity = Math.max(1, parseInt(e.target.value) || 30);
+                });
+            }
+            const probInput = document.getElementById('prob-input');
+            if (probInput) {
+                probInput.addEventListener('change', (e) => {
+                    state.probability = Math.max(0.1, Math.min(100, parseFloat(e.target.value) || 2.2));
+                });
+            }
+        }
+
+        // 渲染角色卡片：微调尺寸，避免挤在一起
+        function renderCharCard(char) {
+            const textClass = `text-${char.quality}`;
+            const qualityName = {
+                'legend-plus': '传说+',
+                'epic': '史诗',
+                'elite': '精英',
+                'normal': '普通'
+            }[char.quality];
+            
+            // 不同品质使用不同的卡片框架
+            let cardImg;
+            if (char.quality === 'legend-plus') {
+                // 传说+：新框架
+                cardImg = "1/传说+.png";
+            } else if (char.quality === 'epic') {
+                // 史诗：新框架
+                cardImg = "1/史诗.png";
+            } else if (char.quality === 'elite') {
+                // 精英：新框架
+                cardImg = "1/精英.png";
+            } else if (char.quality === 'normal') {
+                // 普通：新框架
+                cardImg = "1/普通.png";
+            }
+
+            // 竖版卡片，紧凑无间距
+            if (char.quality === 'legend-plus') {
+                // 传说+：图片缩小居中到框内，显示文字
+                return `
+                    <div class="gacha-card relative w-24 h-[420px] flex-shrink-0 ml-1 first:ml-0">
+                        <img src="${char.icon}" class="gacha-card-img absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90px] h-[360px] object-contain z-20" alt="${char.name}">
+                        <img src="${cardImg}" class="absolute inset-0 w-full h-full object-cover z-10" alt="卡片框架">
+                        <div class="absolute bottom-8 left-0 right-0 text-center z-30">
+                            <div class="text-white font-bold text-sm text-center px-2 leading-tight drop-shadow-lg">${char.name}</div>
+                            <div class="text-sm ${textClass} font-extrabold drop-shadow-lg">${qualityName}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            // 普通、精英、史诗：图片等比例缩小居中到框内，不显示文字
+            return `
+                <div class="gacha-card relative w-24 h-[420px] flex-shrink-0 ml-1 first:ml-0">
+                    <img src="${char.icon}" class="gacha-card-img absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60px] h-[260px] object-contain z-20" alt="${char.name}">
+                    <img src="${cardImg}" class="absolute inset-0 w-full h-full object-cover z-10" alt="卡片框架">
+                </div>
+            `;
+        }
+
+        // 单抽
+        function singlePull() {
+            // 优先检查钻石，300钻石一抽
+            if (state.diamonds >= 300) {
+                state.diamonds -= 300;
+            } else if (state.tickets >= 1) {
+                state.tickets -= 1;
+            } else {
+                alert('钻石或召唤券不足！');
+                return;
+            }
+            const char = drawSingleChar();
+            
+            // 更新结果
+            const container = document.getElementById('result-container');
+            container.innerHTML = renderCharCard(char);
+
+            // 更新UI
+            updateUI();
+        }
+
+        // 十连
+        function tenPull() {
+            // 优先检查钻石，3000钻石十连
+            if (state.diamonds >= 3000) {
+                state.diamonds -= 3000;
+            } else if (state.tickets >= 10) {
+                state.tickets -= 10;
+            } else {
+                alert('钻石或召唤券不足！至少需要3000钻石或10张券才能十连！');
+                return;
+            }
+            const results = [];
+            let golds = 0;
+            for (let i=0; i<10; i++) {
+                const char = drawSingleChar();
+                results.push(char);
+                if (char.quality === 'legend-plus') {
+                    golds += 1;
+                }
+            }
+
+            // 更新结果
+            const container = document.getElementById('result-container');
+            container.innerHTML = results.map(renderCharCard).join('');
+
+            // 更新UI
+            updateUI();
+        }
+
+        // 重置
+        function reset() {
+            state = {
+                diamonds: 10000,
+                tickets: 36,
+                pity: 2,
+                goldCount: 0,
+                maxPity: 45,
+                probability: 2.2
+            };
+            selectedLegendPlusHero = null; // 重置指定英雄
+            updateUI();
+            document.getElementById('result-container').innerHTML = `
+                <div class="text-gray-400 text-center">
+                    <div>点击按钮开始模拟抽卡</div>
+                    <div class="text-sm mt-2" id="mode-info">当前模式：普池（可抽所有传说+）</div>
+                </div>
+            `;
+        }
+
+        // 绑定事件
+        document.getElementById('btn-single').addEventListener('click', singlePull);
+        document.getElementById('btn-ten').addEventListener('click', tenPull);
+        document.getElementById('btn-reset').addEventListener('click', reset);
+        
+        // 神话召唤按钮
+        document.getElementById('btn-mythic').addEventListener('click', function() {
+            alert('敬请期待');
+        });
+        
+        // 概率公式表模态框
+        document.getElementById('btn-probability').addEventListener('click', function() {
+            document.getElementById('probability-modal').classList.remove('hidden');
+        });
+        document.getElementById('btn-close-modal').addEventListener('click', function() {
+            document.getElementById('probability-modal').classList.add('hidden');
+        });
+        // 点击模态框外部关闭
+        document.getElementById('probability-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+        
+        // 状态：当前指定的传说+英雄
+        let selectedLegendPlusHero = null;
+        // 分页状态
+        let currentPage = 1;
+        const itemsPerPage = 9; // 3x3格式
+
+        // 生成传说+英雄列表（支持分页）
+        function generateLegendPlusHeroes() {
+            const legendPlusHeroes = characters.filter(c => c.quality === 'legend-plus');
+            const totalPages = Math.ceil(legendPlusHeroes.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedHeroes = legendPlusHeroes.slice(startIndex, endIndex);
+            
+            const container = document.getElementById('legend-plus-heroes');
+            container.innerHTML = '';
+            
+            paginatedHeroes.forEach(hero => {
+                const heroCard = document.createElement('div');
+                const isSelected = selectedLegendPlusHero && selectedLegendPlusHero.name === hero.name;
+                heroCard.className = `flex items-center gap-4 p-4 rounded-lg cursor-pointer transition-all ${isSelected ? 'bg-yellow-500/20 border-2 border-yellow-400' : 'bg-white/5 hover:bg-white/10'}`;
+                heroCard.innerHTML = `
+                    <img src="${hero.icon}" alt="${hero.name}" class="w-20 h-20 object-cover rounded-lg">
+                    <div>
+                        <h3 class="text-lg font-bold text-yellow-400">${hero.name}</h3>
+                        <p class="mt-1 text-xs">传说+品质，基础概率 2.2%</p>
+                        ${isSelected ? '<p class="mt-1 text-xs text-yellow-400">✓ 当前指定英雄</p>' : ''}
+                    </div>
+                `;
+                
+                // 点击选择英雄
+                heroCard.addEventListener('click', function() {
+                    selectedLegendPlusHero = hero;
+                    generateLegendPlusHeroes();
+                    updateUI();
+                });
+                
+                container.appendChild(heroCard);
+            });
+            
+            // 更新分页信息
+            document.getElementById('page-info').textContent = `第 ${currentPage} 页，共 ${totalPages} 页`;
+            
+            // 更新按钮状态
+            document.getElementById('prev-page').disabled = currentPage === 1;
+            document.getElementById('next-page').disabled = currentPage === totalPages;
+        }
+
+        // 分页控制
+        function changePage(direction) {
+            const legendPlusHeroes = characters.filter(c => c.quality === 'legend-plus');
+            const totalPages = Math.ceil(legendPlusHeroes.length / itemsPerPage);
+            
+            if (direction === 'prev' && currentPage > 1) {
+                currentPage--;
+                generateLegendPlusHeroes();
+            } else if (direction === 'next' && currentPage < totalPages) {
+                currentPage++;
+                generateLegendPlusHeroes();
+            }
+        }
+
+        // 传说+英雄模态框
+        document.getElementById('btn-legend-plus').addEventListener('click', function() {
+            currentPage = 1; // 重置到第一页
+            generateLegendPlusHeroes();
+            document.getElementById('legend-plus-modal').classList.remove('hidden');
+        });
+        document.getElementById('btn-close-legend-modal').addEventListener('click', function() {
+            document.getElementById('legend-plus-modal').classList.add('hidden');
+        });
+        // 确认按钮关闭模态框
+        document.getElementById('btn-confirm-legend').addEventListener('click', function() {
+            document.getElementById('legend-plus-modal').classList.add('hidden');
+        });
+        // 取消按钮关闭模态框
+        document.getElementById('btn-cancel-legend').addEventListener('click', function() {
+            document.getElementById('legend-plus-modal').classList.add('hidden');
+        });
+        // 点击模态框外部关闭
+        document.getElementById('legend-plus-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+        
+        // 分页按钮事件
+        document.getElementById('prev-page').addEventListener('click', function() {
+            changePage('prev');
+        });
+        document.getElementById('next-page').addEventListener('click', function() {
+            changePage('next');
+        });
+
+        // 初始化
+        initInputs();
+        updateUI();
+    </script>
+</body></html>
