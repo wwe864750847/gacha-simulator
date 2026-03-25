@@ -297,6 +297,31 @@
                     <h2 class="text-2xl font-bold text-white">概率公式表</h2>
                     <button id="btn-close-modal" class="text-white text-2xl hover:text-gray-300 transition-colors">&times;</button>
                 </div>
+            </div>
+        </div>
+        
+        <!-- 分享提示模态框 -->
+        <div id="share-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] hidden flex items-center justify-center">
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-8 max-w-md w-full mx-4">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-white">分享网站</h2>
+                    <button id="btn-close-share" class="text-white text-2xl hover:text-gray-300 transition-colors">&times;</button>
+                </div>
+                <div class="space-y-6 text-gray-300">
+                    <div class="text-center">
+                        <p class="text-xl font-bold text-yellow-400 mb-4">网站已复制</p>
+                        <p class="mb-6">可以发送给小伙伴了！</p>
+                    </div>
+                    <div class="bg-black/30 rounded-lg p-4 flex items-center justify-between">
+                        <input type="text" id="share-url" value="https://wwe864750847.github.io/gacha-simulator" class="flex-1 bg-transparent text-white border-0 focus:outline-none" readonly>
+                        <button id="btn-copy-url" class="px-4 py-2 bg-blue-500/80 hover:bg-blue-500 rounded-lg transition-colors text-white ml-2">
+                            复制
+                        </button>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-sm text-gray-400">第四关里面有本网站的一个地址可以复制</p>
+                    </div>
+                </div>
                 <div class="space-y-4 text-gray-300">
                     <div class="bg-white/5 rounded-lg p-4">
                         <h3 class="text-xl font-bold text-white mb-2">抽卡概率计算</h3>
@@ -765,26 +790,41 @@
         
         // 分享按钮
         document.getElementById('btn-share').addEventListener('click', function() {
-            // 分享功能
-            if (navigator.share) {
-                // 使用Web Share API
-                navigator.share({
-                    title: '龙魂旅人模拟抽卡器',
-                    text: '快来体验龙魂旅人模拟抽卡器，更好地规划游戏资源！',
-                    url: window.location.href
-                })
-                .catch((error) => console.log('分享失败:', error));
-            } else {
-                // 复制链接到剪贴板
-                navigator.clipboard.writeText(window.location.href)
-                .then(() => {
-                    alert('链接已复制到剪贴板，请分享给好友！');
-                })
-                .catch((error) => {
-                    console.log('复制失败:', error);
-                    alert('请手动复制链接:', window.location.href);
-                });
+            // 显示分享模态框
+            document.getElementById('share-modal').classList.remove('hidden');
+            
+            // 自动复制链接
+            navigator.clipboard.writeText('https://wwe864750847.github.io/gacha-simulator')
+            .then(() => {
+                console.log('链接已复制');
+            })
+            .catch((error) => {
+                console.log('复制失败:', error);
+            });
+        });
+        
+        // 关闭分享模态框
+        document.getElementById('btn-close-share').addEventListener('click', function() {
+            document.getElementById('share-modal').classList.add('hidden');
+        });
+        
+        // 点击分享模态框外部关闭
+        document.getElementById('share-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
             }
+        });
+        
+        // 复制URL按钮
+        document.getElementById('btn-copy-url').addEventListener('click', function() {
+            navigator.clipboard.writeText(document.getElementById('share-url').value)
+            .then(() => {
+                alert('链接已复制到剪贴板！');
+            })
+            .catch((error) => {
+                console.log('复制失败:', error);
+                alert('复制失败，请手动复制链接');
+            });
         });
         
         // 概率公式表模态框
